@@ -25,7 +25,8 @@ Copyright (c) 2009 Regents of the University of California, Stanford
 
 -- INCLUDES
 require "socket.http";
-json = require("json");
+local json = require("json");
+local ltn12 = require("ltn12");
 
 -- TODO: figure out how to get the local path
 dofile("/usr/local/freeswitch/scripts/AO/paths.lua");
@@ -74,7 +75,7 @@ local IBD_URL = '';
 if (platelets) then
 	-- script-specific sounds
 	bsd = sd .. "forum/platelets/";
-	IBD_URL = 'http://plateletdonors.org/api/ivrs/ws-ivrs-std-code-search.php?';
+	IBD_URL = 'http://plateletdonors.org/api/ivrs/ws-ivrs-std-code-search.php';
 	IBD_BGROUP = 'bloodgroup=';
 	IBD_STD = 'stdcode=';
 else
@@ -218,11 +219,23 @@ end
 d = "";
 -- send request
 freeswitch.consoleLog("info", script_name .. " : request {std=" .. std .. ",bgid=" .. bgroupid .. ",number=" .. caller .."}\n");
-local response = socket.http.request {url=IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller, method="POST"};
-local response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller);
-freeswitch.consoleLog("info", script_name .. " : response is " .. tostring(response) .. "\n");
-
+local number = nil;
+local response = nil;
 if (platelets) then
+  response = {};
+  local reqbody = IBD_BGROUP .. bgroupid .. ' ' .. IBD_STD .. std .. ' ' .. IBD_CALLER .. caller;
+  local result,respcode = socket.http.request {
+              url=IBD_URL, 
+              method="POST",
+              source=ltn12.source.string(reqbody),
+              headers = {
+                          ["content-type"] = "text/plain",
+                          ["content-length"] = tostring(#reqbody)
+                        },
+              sink = ltn12.sink.table(response)          
+           };
+
+  response = table.concat(response);
 	json_table = json.decode(response);	
 	if (json_table.DonorFound == false) then
 		response = nil;
@@ -230,8 +243,11 @@ if (platelets) then
 		number = json_table.DonorMobile;
 	end
 else
+  response = socket.http.request(IBD_URL .. IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller);
 	number = trim(tostring(response));
 end
+
+freeswitch.consoleLog("info", script_name .. " : response is " .. tostring(response) .. "\n");
 
 if (response == nil or trim(tostring(response)) == "0") then
 	promptfile = "nomatch.wav";
