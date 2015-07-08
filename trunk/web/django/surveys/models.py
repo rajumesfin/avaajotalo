@@ -18,7 +18,7 @@ from django.db import models
 from django.db.models import Q
 from django.contrib.admin.util import NestedObjects
 from django.db.models.fields.related import ForeignKey
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Subject(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
@@ -57,7 +57,7 @@ class Survey(models.Model):
     # Deprecated: use inbound field instead
     INBOUND_DESIGNATOR = 'INBOUND'
     template = models.BooleanField(default=False)
-    
+    SURVEY_WINDOW_HOURS = 24
     STATUS_ACTIVE = 0
     STATUS_EXPIRED = 1
     STATUS_CANCELLED = 2
@@ -134,8 +134,13 @@ class Survey(models.Model):
         else:
             # for legacy (pre-survey.subjects) purposes
             pendingcallcnt = Call.objects.filter(survey=self, date__gt=now).count()
-            
-        if pendingcallcnt == 0 and not self.status == Survey.STATUS_CANCELLED:
+        
+        '''
+        Manually expire surveys that are older than the below threshold
+        '''
+        #expiry_cutoff_date = now - timedelta(hours=streamit.BCAST_WINDOW_HOURS)
+        expiry_cutoff_date = now - timedelta(hours=self.SURVEY_WINDOW_HOURS)
+        if not self.status == Survey.STATUS_CANCELLED and (pendingcallcnt == 0 or self.created_on < expiry_cutoff_date):
             self.status = Survey.STATUS_EXPIRED
             self.save()
         
@@ -234,15 +239,18 @@ class Call(models.Model):
     hangup_cause = models.CharField(max_length=128, blank=True, null=True) 
     # make sure max_retries is at least as big as number of backup calls, or else the limit
     # won't be applied
+    HUP_NORMAL_CLEARING = "NORMAL_CLEARING"
+    HUP_NO_ANSWER = "NO_ANSWER"
+    HUP_NO_USER_RESPONSE = "NO_USER_RESPONSE"
     HANGUP_CAUSES = {
                      "UNSPECIFIED" : {"code": 0, "report_desc" : "unspecified exchange error"},
                      "UNALLOCATED_NUMBER" : {"code": 1},
                      "NO_ROUTE_DESTINATION" : {"code": 3},
                      "CHANNEL_UNACCEPTABLE" : {"code": 6},
-                     "NORMAL_CLEARING" : {"code": 16},
+                     HUP_NORMAL_CLEARING : {"code": 16},
                      "USER_BUSY" : {"code": 17},
-                     "NO_USER_RESPONSE" : {"code": 18},
-                     "NO_ANSWER" : {"code": 19},
+                     HUP_NO_USER_RESPONSE : {"code": 18},
+                     HUP_NO_ANSWER : {"code": 19},
                      "CALL_REJECTED" : {"code": 21},
                      "DESTINATION_OUT_OF_ORDER" : {"code": 27},
                      "INVALID_NUMBER_FORMAT" : {"code": 28},
