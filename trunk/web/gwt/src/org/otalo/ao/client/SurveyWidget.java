@@ -290,19 +290,26 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 	    String startdate = details.get("startdate");
 			String completed = details.get("completed");
 			String pending = details.get("pending");
+			String attempted = details.get("attempts");
 			
 			String surveyDetails = "<b>Start: </b> " + startdate + "<br><br>";
-			int numrecipients = completed.split(", ").length+pending.split(", ").length;
+			int numrecipients = completed.split(", ").length+pending.split(", ").length+attempted.split(", ").length;
 			// For some reason, the above line creates an array of length one if
 			// one of the strings is empty
 			// Assumes that completed and pending cannot both be empty
-			if (completed.equals("") || pending.equals(""))
+			if (completed.equals("") || pending.equals("") || attempted.equals(""))
 			{
-				numrecipients -= 1;
+				if (completed.equals("") && pending.equals("") && attempted.equals(""))
+						numrecipients -= 3;
+				else if((completed.equals("") && pending.equals("")) || (pending.equals("") && attempted.equals("")) || (completed.equals("") && attempted.equals("") ) )
+					numrecipients -= 2;
+				else
+					numrecipients -= 1;
 			}
 			surveyDetails += "<b>Num Recipients: </b>" + String.valueOf(numrecipients);
 			
-			surveyDetails += "<br><br><b>Pending:</b>";    
+			surveyDetails += "<br><br><b>Not Attempted:</b>";   
+			
 	    HTML pendingHTML = new HTML(surveyDetails);
 			pendingHTML.setStyleName("mail-AboutText");
 	    outer.add(pendingHTML);
@@ -311,6 +318,18 @@ public class SurveyWidget implements ClickHandler, JSONRequester {
 	    pendingLbl.setWordWrap(true);
 	    pendingLbl.setStyleName("dialog-NumsText");
 	    outer.add(pendingLbl);
+	    
+	    
+	    HTML attempttsHTML = new HTML("<br><b>Attempted But Not Completed:</b>");
+	    attempttsHTML.setStyleName("mail-AboutText");
+	    outer.add(attempttsHTML);
+	    
+	    Label attempttsLbl = new Label(attempted, true);
+	    attempttsLbl.setWordWrap(true);
+	    attempttsLbl.setStyleName("dialog-NumsText");
+	    outer.add(attempttsLbl);
+	    
+	    
 	    
 	    HTML compHTML = new HTML("<br><b>Completed:</b>");
 			compHTML.setStyleName("mail-AboutText");
