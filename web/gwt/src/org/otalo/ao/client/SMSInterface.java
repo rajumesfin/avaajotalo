@@ -39,7 +39,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.datepicker.client.DatePicker;
 import com.google.gwt.user.datepicker.client.DateBox;
@@ -51,13 +50,11 @@ public class SMSInterface extends Composite {
 	private HorizontalPanel controls = new HorizontalPanel();
 	private HorizontalPanel datePanel;
 	private Button sendButton;
-	private TextBox sinceField;
 	private Hidden dateField;
 	private TextArea txtArea;
-	private DatePicker since;
-	private ListBox tags, lastNCallers, groups;
+	private ListBox tags, groups;
 	private Hidden lineid;
-	private CheckBox numbers, usersByTag, usersByLog;
+	private CheckBox numbers, usersByTag;
 	private Label remainingCharsLabel, dateLabel;
 	private final int SMS_MAX_LENGTH = 160;
 	private DateBox dateBox;
@@ -96,8 +93,6 @@ public class SMSInterface extends Composite {
 		numbers.setName("bynumbers");
 		usersByTag = new CheckBox("Users by Tag:");
 		usersByTag.setName("bytag");
-		usersByLog = new CheckBox("Last");
-		usersByLog.setName("bylog");
 		
 		TextArea numbersArea = new TextArea();
 		numbersArea.setName("numbersarea");
@@ -115,45 +110,10 @@ public class SMSInterface extends Composite {
 				usersByTag.setValue(true);
 			}
 		});
-		lastNCallers = new ListBox();
-		lastNCallers.addItem("", "-1");
-		lastNCallers.setName("lastncallers");
-		lastNCallers.addFocusHandler(new FocusHandler() {
-			public void onFocus(FocusEvent event) {
-				usersByLog.setValue(true);
-			}
-		});
-		for(int i=1; i < 6; i++)
-		{
-			lastNCallers.addItem(String.valueOf(i*100), String.valueOf(i*100));
-		}
-		lastNCallers.addItem("All", "ALL");
 		
 		groups = new ListBox();
 		groups.addItem("", "-1");
 		groups.setName("group");
-		
-		Label usersSince = new Label("callers since");
-		sinceField = new TextBox();
-		sinceField.setName("since");
-		since = new DatePicker();
-		since.addValueChangeHandler(new ValueChangeHandler<Date>() {
-
-			public void onValueChange(ValueChangeEvent<Date> event) {
-				Date d = event.getValue();
-				sinceField.setValue(DateTimeFormat.getFormat("MMM-dd-yyyy").format(d));
-				since.setVisible(false);
-				
-			}
-		});
-		
-		sinceField.addFocusHandler(new FocusHandler() {
-			
-			public void onFocus(FocusEvent event) {
-				since.setVisible(true);		
-				usersByLog.setValue(true);
-			}
-		});
 		
 		dateLabel = new Label("Broadcast Time: ");
 		
@@ -243,18 +203,9 @@ public class SMSInterface extends Composite {
 			tagPanel.add(usersByTag);
 			tagPanel.add(tags);
 			
-			HorizontalPanel logPanel = new HorizontalPanel();
-			logPanel.setSpacing(10);
-			logPanel.add(usersByLog);
-			logPanel.add(lastNCallers);
-			logPanel.add(usersSince);
-			logPanel.add(sinceField);
-			since.setVisible(false);
-			logPanel.add(since);
 			
 			whoPanel.add(numbersPanel);
 			whoPanel.add(tagPanel);
-			whoPanel.add(logPanel);
 		}
 		
 		who.add(whoPanel);
@@ -421,15 +372,9 @@ public class SMSInterface extends Composite {
 		 // are activated indirectly (kinda weird)
 		 numbers.setValue(false);
 		 usersByTag.setValue(false);
-		 usersByLog.setValue(false);
-		 lastNCallers.setItemSelected(3, true);
 		 
 		 remainingCharsLabel.setText(Integer.toString(SMS_MAX_LENGTH));
 		 remainingCharsLabel.setStyleName("sms_under");
-		 
-		 Date today = new Date();
-		 since.setValue(today);
-		 since.setVisible(false);
 		 
 		 stackPanel.showStack(0);
 	 }
