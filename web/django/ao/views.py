@@ -857,16 +857,22 @@ def surveydetails(request, survey_id):
         numbers = survey.subjects.all()
         numbers = [su.number for su in numbers]
     else:
-        numpairs = calls.values('subject__number').distinct()
-        numbers = [pair.values()[0] for pair in numpairs]
+        numbers = calls.values_list('subject__number',flat=True).distinct()
     
-    numpairscomplete = calls.filter(complete=True).values('subject__number').distinct()
-    completed_numbers = [pair.values()[0] for pair in numpairscomplete]
-    pending_numbers = list(set(numbers) - set(completed_numbers))
-    completed = ', '.join(completed_numbers)
+    completed_numbers = calls.filter(complete=True).values_list('subject__number',flat=True).distinct()    
+    
+    not_complete_numbers = list(set(numbers) - set(completed_numbers))
+
+    attempted_numbers = calls.filter(hangup_cause__in=[Call.HUP_NORMAL_CLEARING,Call.HUP_NO_ANSWER,Call.HUP_NO_USER_RESPONSE]).values_list('subject__number',flat=True).distinct()
+    attempted_numbers = list(set(attempted_numbers) - set(completed_numbers))
+    
+    pending_numbers = list(set(not_complete_numbers) - set(attempted_numbers))
+
+    completed = ', '.join(list(completed_numbers))
+    attempted_numbers = ', '.join(attempted_numbers)
     pending = ', '.join(pending_numbers)
     
-    response = HttpResponse('[{"model":"SURVEY_METADATA", "startdate":"'+str(firstcalldate)+'","completed":"'+completed+'","pending":"'+pending+'"}]')
+    response = HttpResponse('[{"model":"SURVEY_METADATA", "startdate":"'+str(firstcalldate)+'","completed":"'+completed+'","attempts":"'+attempted_numbers+'","pending":"'+pending+'"}]')
     response['Pragma'] = "no cache"
     response['Cache-Control'] = "no-cache, must-revalidate"
     return response
@@ -1008,37 +1014,6 @@ def sendsms(request):
         
         for u in users:
             recipients.append(u)
-    
-    if params.__contains__('bylog'):
-        lastncallers = params['lastncallers']
-        since = params['since']
-        
-        if lastncallers == 'ALL':
-            lastncallers = 0
-        else:
-            lastncallers = int(lastncallers)
-        
-        if since:
-            since = datetime.strptime(since, '%b-%d-%Y')
-        else:
-            # in case no date is selected, get no recipients
-            since = datetime.now()
-               
-        filename = settings.INBOUND_LOG_ROOT+str(line.id)+'.log'
-        calls = stats_by_phone_num.get_numbers_by_date(filename=filename, destnum=str(line.number), date_start=since, quiet=True)
-        numbers = calls.keys()
-        
-        if lastn:
-            numbers = numbers[:lastn]
-            
-        for number in numbers:
-            u = User.objects.filter(number=number, allowed='y', indirect_bcasts_allowed=True)
-            if bool(u):
-                u = u[0]
-            else:
-                u = User(number=number,allowed='y')
-                u.save()
-            recipients.append(u) 
     
     if params.__contains__('group'):
         group = params['group']
