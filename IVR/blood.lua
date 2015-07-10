@@ -223,13 +223,13 @@ local number = nil;
 local response = nil;
 if (platelets) then
   response = {};
-  local reqbody = IBD_BGROUP .. bgroupid .. ' ' .. IBD_STD .. std .. ' ' .. IBD_CALLER .. caller;
+  local reqbody = IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller;
   local result,respcode = socket.http.request {
               url=IBD_URL, 
               method="POST",
               source=ltn12.source.string(reqbody),
               headers = {
-                          ["content-type"] = "text/plain",
+                          ["content-type"] = "application/x-www-form-urlencoded",
                           ["content-length"] = tostring(#reqbody)
                         },
               sink = ltn12.sink.table(response)          
