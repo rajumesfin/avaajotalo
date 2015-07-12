@@ -70,6 +70,9 @@ local IBD_STD = 'std=';
 local IBD_BGROUP = 'bgid=';
 local IBD_CALLER = 'caller=';
 local IBD_BGROUP_OPTS = {"a+%2Bve", "a+-ve", "b+%2Bve", "b+-ve", "ab+%2Bve", "ab+-ve", "o+%2Bve", "o+-ve"};
+local IBD_USERNAME = 'username=awaazde';
+local IBD_PASSWORD = 'password=XXX';
+local IBD_LANGUAGE = 'language='
 
 local IBD_URL = '';
 if (platelets) then
@@ -223,7 +226,7 @@ local number = nil;
 local response = nil;
 if (platelets) then
   response = {};
-  local reqbody = IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller;
+  local reqbody = IBD_BGROUP .. bgroupid .. '&' .. IBD_STD .. std .. '&' .. IBD_CALLER .. caller .. '&' .. IBD_USERNAME .. '&' .. IBD_PASSWORD .. '&' .. IBD_LANGUAGE .. lang;
   local result,respcode = socket.http.request {
               url=IBD_URL, 
               method="POST",
