@@ -520,8 +520,10 @@ public class ManageGroups extends Composite {
     Label inputTypeLabel = new Label("Response Type");
     inputBox = new ListBox();
     inputBox.setName("inputtype");
-    inputBox.addItem("Touchtone", "0");
-    inputBox.addItem("Voice", "1");
+    inputBox.addItem("None", Forum.RESPONSE_TYPE_NONE);
+    inputBox.addItem("Touchtone", Forum.RESPONSE_TYPE_TOUCHTONE);
+    inputBox.addItem("Voice", Forum.RESPONSE_TYPE_VOICE);
+    
     
     maxInputLabel = new Label("Max Number of Digits");
     maxInputLengthBox = new ListBox();
@@ -535,7 +537,7 @@ public class ManageGroups extends Composite {
 			
 			public void onChange(ChangeEvent event) {
 				int idx = inputBox.getSelectedIndex();
-				if (idx == 0)
+				if (idx == 1)
 				{
 					// touchtone
 					maxInputLabel.setVisible(true);
@@ -545,7 +547,7 @@ public class ManageGroups extends Composite {
 				}
 				else
 				{
-					// voice
+					// voice or no response
 					maxInputLabel.setVisible(false);
 					maxInputLengthBox.setVisible(false);
 				}
@@ -1044,26 +1046,35 @@ public class ManageGroups extends Composite {
 		}
 		
 		/*
-		 *  This works as long as there are only two input types and
-		 *  their order in the box matches their boolean value.
-		 *  
-		 *  Lot of shortcuts to make the code faster (but less readable).
+		 *  getResponseType return Responsetype of group
+		 *  if it's TOUCHTONE Response then in response dropdown it's index is 1
+		 *  if it's VOICE Response then in response dropdown it's index is 2
+		 *  if it's NO Response then in response dropdown it's index is 0
+		 *  so here we first get response type and based on it we display it's selected and
+		 *  if it's VOICE or NO response then maxInputLengthBox should hide else it's displayed in TOUCHTONE
 		 */
-		int inputType = group.responsesAllowed() ? 1 : 0;
-		inputBox.setSelectedIndex(inputType);
-		
-		if (inputType == 0)
+		String inputType = group.getResponseType();
+		if (inputType == Forum.RESPONSE_TYPE_TOUCHTONE)
 		{
 			// touchtone
 			maxInputLabel.setVisible(true);
 			int maxInputLength = group.getMaxInputLength();
 			maxInputLengthBox.setItemSelected(maxInputLength-1, true);
 			maxInputLengthBox.setVisible(true);
+			inputBox.setSelectedIndex(1);
 			
+		}
+		else if (inputType == Forum.RESPONSE_TYPE_VOICE)
+		{
+			// voice or no response
+			inputBox.setSelectedIndex(2);
+			maxInputLabel.setVisible(false);
+			maxInputLengthBox.setVisible(false);
 		}
 		else
 		{
-			// voice
+			// No response
+			inputBox.setSelectedIndex(0);
 			maxInputLabel.setVisible(false);
 			maxInputLengthBox.setVisible(false);
 		}
