@@ -24,6 +24,9 @@ import com.google.gwt.core.client.JsArray;
 public class Forum extends BaseModel {
 	private static final String METADATA_MODEL_TYPE = "GROUP_METADATA";
 	// make this consistent with ao:models.py
+	public static final String RESPONSE_TYPE_NONE = "o";
+	public static final String RESPONSE_TYPE_TOUCHTONE = "n";
+	public static final String RESPONSE_TYPE_VOICE = "y";
   public enum ForumStatus {  
   	BCAST_CALL_SMS(1), BCAST_SMS(2), INACTIVE(3), BCAST_CALL(4);
   
@@ -68,6 +71,11 @@ public class Forum extends BaseModel {
 	public boolean responsesAllowed()
 	{
 		return getField("responses_allowed").equals("y");
+	}
+	
+	public String getResponseType()
+	{
+		return getField("responses_allowed");
 	}
 	
 	public boolean moderated()
