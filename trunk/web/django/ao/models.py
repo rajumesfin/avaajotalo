@@ -203,6 +203,11 @@ class Forum(models.Model):
     '########################################################################################
     ' Begin group-related additions
     '''
+    RESPONSE_TYPE_TOUCHTONE = "n"
+    RESPONSE_TYPE_VOICE = "y"
+    RESPONSE_TYPE_NONE = "o"
+    NONE_RESPONSE_INPUT_LENGTH = 0
+
     STATUS_BCAST_CALL_SMS = 1
     STATUS_BCAST_SMS = 2
     STATUS_INACTIVE = 3
@@ -236,10 +241,13 @@ class Forum(models.Model):
     '''
     '    Adapted fields (to avoid creating extra fields)
     '    ----------------------------------------------
-    '    responses_allowed => response_type (voice = True, touchtone = False)
+    '    responses_allowed => response_type (voice = y, touchtone = n, Noresponse = o)
     '    max_responder_len => maximum input length for touchtone input
     '''
-    
+    '''
+    '    For Stream users we have one extra response_type option
+    '    RESPONSE_TYPE_NONE so for that we stoe o to response_allowed field
+    '''
     '''
     ' End group-related additions
     '########################################################################################
