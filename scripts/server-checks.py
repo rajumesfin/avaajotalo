@@ -1,4 +1,4 @@
-import sys, subprocess
+import os, sys, subprocess
 import requests, json
 from datetime import datetime, timedelta
 from requests.exceptions import ConnectionError
@@ -54,7 +54,12 @@ def check_freeswitch():
 	
 	if out == '':
 		print("error FreeSWITCH is down!")
-		report_error("FreeSWITCH is down!")	
+		report_error("FreeSWITCH is down!")
+
+	# check to make sure this file has been updated recently to avoid reporting stale errors
+	last_mod = os.path.getmtime('/usr/local/freeswitch/log/freeswitch.log')
+	if last_mod < datetime.now() - timedelta(minutes=60):
+		return
 	
 	p = subprocess.Popen(['grep', 'LuaSQL: Error connecting to database.', '/usr/local/freeswitch/log/freeswitch.log'], stdout=subprocess.PIPE)
 	out,err = p.communicate()
