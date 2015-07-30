@@ -57,7 +57,7 @@ def check_freeswitch():
 		report_error("FreeSWITCH is down!")
 
 	# check to make sure this file has been updated recently to avoid reporting stale errors
-	last_mod = os.path.getmtime('/usr/local/freeswitch/log/freeswitch.log')
+	last_mod = datetime.datetime(os.path.getmtime('/usr/local/freeswitch/log/freeswitch.log'))
 	if last_mod < datetime.now() - timedelta(minutes=60):
 		return
 	
