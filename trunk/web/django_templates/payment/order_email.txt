@@ -1,8 +1,11 @@
-Hello {{user.name}},
+{% load common_tags %}
+Dear {{user.name}},
 
-Thank you for the payment at AwaazDe. Below is your order summary.
+Thank you for using AwaazDe.
 
-Order Summary - #{{order_no}}:
+Your payment request has been successfully processed as per the following details :
+
+Order Summary - #{{order_no}}:                         Service Tax No : AAKCA7216RSD001
 
 {% if group_recharge %}
 
@@ -28,7 +31,13 @@ Order Summary - #{{order_no}}:
 	Discount (coupon code: {{coupon_code}}) = Rs. -{{ coupon_amount|floatformat:2 }}
 {% endif %}
 
-	Net Total: Rs. {{ net_total_amount|floatformat:2 }}
+	{% for tax_label,tax_percatenge in APPLICABLE_TAX.items %}
+		{{ tax_label }} ( {{tax_percatenge}}% ) = Rs. {{ net_total_amount|calculate_tax:tax_percatenge }}
+
+	{% endfor %}
+	
+	
+	Amount Received = Rs. {{ net_total_amount|floatformat:2 }}
 	
 	
 You can contact us with any question or concern by  sending an email to ask@awaaz.de

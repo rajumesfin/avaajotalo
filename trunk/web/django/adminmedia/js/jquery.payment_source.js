@@ -54,16 +54,10 @@ jQuery(function($) {
 
 		$rechargeplanSel : $("#rechargeplan"),
 		$rechargeplanLbl : $("#recharge_total_pr"),
-		$memberRow : $("#memberrow"),
-		$noMembersInp : $("#members"),
-		$membersRadio : $("input[name=memberDurRadio]:radio"),
-		$perMemberPrice : $("#permemberprice"),
-		$memberTotalPrice : $("#membertotalprice"),
 		$rcLbl : $("#reclbl"),
 
 		$planCredits : [],
 		$memberPrices : [],
-		$memberTimeSlab : [],
 
 		$rechargePrices : [],
 		$rechargeCreditPlans : [],
@@ -85,11 +79,6 @@ jQuery(function($) {
 
 			this.$selRechargePrice = 3499;
 
-			this.$memberPrices = [ 9, 8 ];
-			this.$memberTimeSlab = [ 6, 12 ];
-
-			this.$memberRow.hide();
-
 			this.$commonApp = commonapp_ins;
 			this.bindEvents();
 
@@ -97,103 +86,38 @@ jQuery(function($) {
 		},
 		bindEvents : function() {
 			this.$rechargeplanSel.on('change', this.changeRechargePrice.bind(this));
-			this.$membersRadio.on('change', this.changeMemberPrice.bind(this));
-			this.$noMembersInp.on('keyup', this.calMemberPrice.bind(this));
+			
 		},
 		getRecCalculatedAmt : function() {
 			return this.$selRechargePrice;
 		},
 		getCurrentSelectedPlanCredit : function() {
 			var selPlanIdx = this.$rechargeplanSel.val();
-			if (selPlanIdx == 4)
-				return -1;
 			return this.$rechargeCreditPlans[selPlanIdx];
 		},
-		getSelectedMember : function() {
-			if(this.$isUnlimitedPlan)
-				return this.$noMembersInp.val();
-			else
-				return -1;
-		},
-		getSelectedDuration : function() {
-			return this.$noMembersInp.val();
-		},
-		getSelectedMemberDuration : function() {
-			if(this.$isUnlimitedPlan)
-				return ($("input[type='radio'][name='memberDurRadio']:checked").val() == 0 ? 6 : 12);
-			else
-				return null;
-		},
+		
 		changeRechargePrice : function(event) {
 			this.$selPlanIdx = this.$rechargeplanSel.val();
-
-			if (this.$selPlanIdx == 4) {
-				this.$memberRow.show();
-				this.$selRechargePrice = 2700; //default selected
-				this.$isUnlimitedPlan = true;
-				this.$rcLbl.hide();
-			} else {
-				this.$memberRow.hide();
-				this.$selRechargePrice = this.$rechargePrices[this.$selPlanIdx];
-				this.$rechargeplanLbl.text(this.$commonApp.getFormattedNo(this.$selRechargePrice));
-				this.$rcLbl.show();
-			}
+			this.$selRechargePrice = this.$rechargePrices[this.$selPlanIdx];
+			this.$rechargeplanLbl.text(this.$commonApp.getFormattedNo(this.$selRechargePrice));
+			this.$rcLbl.show();
 			this.$commonApp.changeTotal();
 		},
-		changeMemberPrice : function(event) {
-			var selected_dur = $("input[type='radio'][name='memberDurRadio']:checked");
-			if (selected_dur.length > 0) {
-				this.$selMemberPrice = this.$memberPrices[selected_dur.val()];
-
-				var selVal = this.$noMembersInp.val();
-				var selIntVal = parseFloat(selVal);
-				if (isNaN(selIntVal))
-					selIntVal = 0.00;
-
-				this.$perMemberPrice.text(this.$selMemberPrice.toFixed(2));
-
-				this.$selRechargePrice = selIntVal * this.$selMemberPrice * this.$memberTimeSlab[selected_dur.val()];
-				this.$memberTotalPrice.text(this.$commonApp.getFormattedNo(this.$selRechargePrice.toFixed(2)));
-			}
-
-			this.$commonApp.changeTotal();
-		},
-		calMemberPrice : function(e) {
-			var keyCode = e.which ? e.which : e.keyCode;
-			var ret = ((keyCode >= 48 && keyCode <= 57)
-					|| (keyCode >= 96 && keyCode <= 105) || this.$specialKeys.indexOf(keyCode) != -1);
-			var selVal = this.$noMembersInp.val();
-
-			if (!ret)
-				this.$noMembersInp.val(selVal.substring(0, selVal.length - 1));
-			else
-				this.changeMemberPrice();
-
-			return ret;
-		}
 	};
 
 	var GroupApp = {
 		$groupRow : $("#groupRow"),
 		$grpSize : $("#grpsize"),
 		$norGroupLbl : $("#normal-grp"),
-		$groupNoLbl : $("#group_no"),
-		$durationRadio : $("input[name=durationRadio]:radio"),
 		$grpPriceLbl : $("#grp_total_pr"),
 
-		$groupPrices6Mon : [],
-		$groupPrices12Mon : [],
 		$selGroupPrice : 0,
 		$selGrpIdx : 0,
-
+		$oneGroupPrice : 3798,
 		$commonApp : null,
 
 		init : function(commonapp_ins) {
-			this.$groupPrices6Mon = [ 1899, 3578, 5037, 6276, 7295, 8094, 8673, 9032, 9171, 9090 ];
-			this.$groupPrices12Mon = [ 3798, 7156, 10074, 12552, 14590, 16188, 17346, 18064, 18342, 18180 ];
-			
 			this.setGrpCalculatedDefaultAmt();
-			this.$grpSize.slider();
 			this.$commonApp = commonapp_ins;
 			this.bindEvents();
 
@@ -203,44 +127,23 @@ jQuery(function($) {
 			return this.$selGroupPrice;
 		},
 		setGrpCalculatedDefaultAmt: function() {
-			this.$selGroupPrice = 1899;
+			this.$selGroupPrice = this.$oneGroupPrice;
 		},
 		resetGrpCalculatedDefaultAmt: function() {
 			this.$selGroupPrice = 0;
 		},
 		bindEvents : function() {
-			this.$durationRadio.on('change', this.changeGroupPrice.bind(this));
-			this.$grpSize.on('slide', this.changeGroupPrice.bind(this));
+			this.$grpSize.on('change', this.changeGroupPrice.bind(this));
 		},
 		changeGroupPrice : function(e) {
-			this.$selGrpIdx = this.$grpSize.slider('getValue');//parseInt(slideEvt.value);
-
-			this.$groupNoLbl.text(this.$selGrpIdx);
-
-			var selected_dur = $("input[type='radio'][name='durationRadio']:checked");
-			if (selected_dur.length > 0) {
-				if (selected_dur.val() == 1) {
-					if (this.$selGrpIdx >= 10)
-						this.$selGroupPrice = this.$selGrpIdx * 900;
-					else
-						this.$selGroupPrice = this.$groupPrices6Mon[this.$selGrpIdx - 1];
-				} else {
-					if (this.$selGrpIdx >= 10)
-						this.$selGroupPrice = this.$selGrpIdx * 1800;
-					else
-						this.$selGroupPrice = this.$groupPrices12Mon[this.$selGrpIdx - 1];
-				}
-			}
+			this.$selGrpIdx = this.$grpSize.val();
+			this.$selGroupPrice = this.$oneGroupPrice * this.$selGrpIdx;
 			this.$grpPriceLbl.text(this.$commonApp.getFormattedNo(this.$selGroupPrice));
-
 			this.$commonApp.changeTotal();
 		},
 		getSelectedGroup : function() {
-			return this.$grpSize.slider('getValue');
+			return this.$grpSize.val();
 		},
-		getGroupDuration : function() {
-			return ($("input[type='radio'][name='durationRadio']:checked").val() == 1 ? 6 : 12);
-		}
 	};
 
 	var CouponApp = {
@@ -276,7 +179,7 @@ jQuery(function($) {
 			event.preventDefault();
 
 			this.$applyBtn.button('loading');
-			var famt = this.$commonApp.getCurrentAmount();
+			var famt = this.$commonApp.getTotalPriceWithoutTax();
 
 			if (famt < 0) {
 				this.$couponErrorLbl.text("Total amount should be greater than 0");
@@ -340,6 +243,8 @@ jQuery(function($) {
 		$secureAmt : $("#id_secure_hash"),
 		$amtHidden : $("#id_amount"),
 		$totalPriceBtn : $("#total_prbtn"),
+		$totalPriceWithoutTax : $("#total_pr_without_tax"),
+		$taxPercantage : $("#tax_pr"),
 		$refNoHidden : $("#id_reference_no"),
 		$form : $("#frmTransaction"),
 		$urlInput: $("#hash_url"),
@@ -353,15 +258,16 @@ jQuery(function($) {
 		$couponApp : null,
 		$groupApp : null,
 		$rechargeApp : null,
-
+		$tax_percantage : [],
+		$tax_label : [],
 		init : function() {
 			//initializing
 			this.$couponApp = CouponApp.init(this);
 			this.$groupApp = GroupApp.init(this);
 			this.$rechargeApp = RechargeApp.init(this);
-			this.$amtHidden.val(5398);
 			this.$option = 3;
 			this.bindEvents();
+			var taxPercantage = 0;
 		},
 		bindEvents : function() {
 			this.$payBtn.on('click', this.getSecureHash.bind(this));
@@ -422,9 +328,6 @@ jQuery(function($) {
 							refrenceno : $this.$refNoHidden.val(),
 							credits : credits,
 							nogroups : groups,
-							groupduration : $this.$groupApp.getGroupDuration(),
-							nomembers : $this.$rechargeApp.getSelectedMember(),
-							memberduration : $this.$rechargeApp.getSelectedMemberDuration(),
 							option : $this.$option
 						},
 						success : function(json) {
@@ -459,6 +362,20 @@ jQuery(function($) {
 				lastThree = ',' + lastThree;
 			return (otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + afterPoint);
 		},
+		calculateTax : function(amount) {
+			var tax_amount = parseFloat(amount*this.$tax_percantage/100);
+			tax_amount = parseFloat(tax_amount.toFixed(2));
+			return tax_amount;
+		},
+		addTaxToTotalAmount : function(amount) {
+			var taxPercantage = 0;
+			for (var i=0;i<this.$tax_percantage.length;i++) {
+				taxPercantage += parseInt(this.$tax_percantage[i]);
+			}
+			var new_amount = parseFloat( amount + (amount*taxPercantage/100));
+			new_amount = parseFloat(new_amount.toFixed(2));
+			return new_amount; 
+		},
 		changeTotal : function() {
 			var famt = 0.00;
 			if(this.$isMessageEnabled)
@@ -466,18 +383,41 @@ jQuery(function($) {
 			if(this.$isGroupEnabled)
 				famt += this.$groupApp.getGrpCalculatedAmt();
 			
-			this.$totalPriceBtn.text(famt);
-			this.$amtHidden.val(famt.toFixed(2));
+			this.$totalPriceBtn.text(this.addTaxToTotalAmount(famt));
+			this.$totalPriceWithoutTax.text(famt);
+			this.$amtHidden.val(this.addTaxToTotalAmount(famt).toFixed(2));
 		},
 		setNewAmount : function(new_amount) {
-			this.$totalPriceBtn.text(new_amount);
-			this.$amtHidden.val(new_amount);
+			this.$totalPriceBtn.text(this.addTaxToTotalAmount(new_amount));
+			this.$totalPriceWithoutTax.text(new_amount);
+			this.$amtHidden.val(this.addTaxToTotalAmount(new_amount).toFixed(2));
+		},
+		getTotalPriceWithoutTax : function() {
+			var famt = 0.00;
+			if(this.$isMessageEnabled)
+				famt += this.$rechargeApp.getRecCalculatedAmt();
+			if(this.$isGroupEnabled)
+				famt += this.$groupApp.getGrpCalculatedAmt();
+			return famt;
 		},
 		getCSRFToken : function() {
 			return this.$csrf.getToken();
-		}
+		},
+		setTaxData : function (tax_labels, tax_percentage) {
+			this.$tax_percantage = tax_percentage;
+			this.$tax_label = tax_labels;
+			var taxPercantage = "(";
+			for (var i=0;i<this.$tax_percantage.length;i++) {
+				taxPercantage += " + "
+				taxPercantage += this.$tax_label[i];
+				taxPercantage += " "
+				taxPercantage += this.$tax_percantage[i];
+				taxPercantage += "%"
+			}
+			taxPercantage += " ) "
+			this.$taxPercantage.text(taxPercantage);
+			CommonApp.changeTotal();
+		},
 	};
-
-	//starting
-	CommonApp.init();
+	window.CommonApp = CommonApp;
 });

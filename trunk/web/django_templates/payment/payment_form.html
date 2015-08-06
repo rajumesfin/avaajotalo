@@ -1,5 +1,5 @@
 {% extends 'payment/payment_base.html' %} {% load crispy_forms_tags %}
-
+{% load common_tags %}
 {% block title %}Awaaz.De | Buy more credits{% endblock %} 
 
 {% block extrahead %}
@@ -297,6 +297,37 @@ p.text-mute {
 </style>
 {% endblock %} 
 
+{% block extrascripts %}
+
+<script src="{{ STATIC_URL }}js/jquery.payment.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+$(function () {
+  	
+  	$('[data-toggle="popover"]').popover({ trigger: "hover",html:true });
+	
+	CommonApp.init();
+  	
+  	var tax_label = [];
+	var tax_percentage = [];
+  	
+  	console.log("{{APPLICABLE_TAX}}");
+  	{% for key,data in APPLICABLE_TAX.items  %}
+		tax_label.push("{{ key }}");
+		tax_percentage.push("{{ data }}");
+	{% endfor %}
+  	
+  	CommonApp.setTaxData(tax_label,tax_percentage);
+
+});
+
+</script>
+
+
+{% endblock %}
+
+
 {% block page_content %}
 <div class="col-lg-7 pricing-plan-container">
 	<div class="row">
@@ -347,49 +378,10 @@ p.text-mute {
 												messages)</option>
 											<option value="2">Blaster Pack (18,000 messages)</option>
 											<option value="3">Mega Pack (1,25,000 messages)</option>
-											<option value="4">Unlimited Pack</option>
 										</select>
 									</div>
 									<div class="col-sm-3 col-lg-3 col-md-3 col-xs-6">
 										<span id="reclbl">= Rs. <label id="recharge_total_pr">3,499</label></span>
-									</div>
-								</div>
-							</div>
-						</div>
-						
-						<div class="row" id="memberrow">
-							<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center field">
-								<div class="form-group">
-									<label for="number"
-										class="col-sm-2 col-lg-2 col-md-2 col-xs-6 col-sm-offset-2 col-md-offset-1 col-lg-offset-1 control-label">
-										No. of members <a href="#" tabindex="0" data-container="body" data-toggle="popover" data-placement="top" data-trigger="focus" 
-								data-content="<p>Members are recipients of your voice messages. You specify them by adding names and numbers from the 'Members' tab from group management section.</p>">
-										<i class="glyphicon glyphicon-question-sign"></i></a> </label>
-									<div class="col-sm-6 col-lg-6 col-md-6 col-xs-6">
-										<input type="text" class="form-control" name="members"
-											placeholder="Enter number of members" maxlength="20" id="members"
-											value="50" />
-										<p id="membersErrorLbl"></p>
-						
-										<div class="row">
-											<div class="radio time-sel m-rad">
-												<label> <input type="radio" name="memberDurRadio"
-													id="6month" value="0" checked> <span
-													class="custom-radio custom-c-radio"></span> 6 Months Validity (Rs. 9/user/month)
-												</label>
-											</div>
-						
-											<div class="radio time-sel">
-												<label> <input type="radio" name="memberDurRadio"
-													id="12month" value="1"> <span
-													class="custom-radio custom-c-radio"></span> 12 Months Validity (Rs. 8/user/month)
-												</label>
-											</div>
-										</div>
-									</div>
-									<div class="col-sm-3 col-lg-3 col-md-3 col-xs-6">
-										&nbsp; Rs. <label
-											id='membertotalprice'>2,700</label>
 									</div>
 								</div>
 							</div>
@@ -404,35 +396,24 @@ p.text-mute {
 									No. of groups <a href="#" tabindex="0" data-container="body" data-toggle="popover" data-placement="top" data-trigger="focus" 
 								data-content="<p>Group = Dedicated Number</p>">
 										<i class="glyphicon glyphicon-question-sign"></i></a></label>
+								
+								
 								<div class="col-sm-6 col-lg-6 col-md-6 col-xs-6">
-									<input id="grpsize" data-slider-id='nogroupsSlider' type="text"
-										data-slider-min="1" data-slider-max="40" data-slider-tooltip="hide"
-										data-slider-step="1" data-slider-value="1" /> &nbsp;<label
-										id="group_no">1</label>
+									<select class="form-control" id="grpsize" name="grpsize">
+											{% for i in 20|times %}
+												{% if i == 1 %}
+													 <option value="1" selected="selected">1</option>
+												{% else %}
+													<option value="{{i}}">{{i}}</option>
+												{% endif %}
+											{% endfor %}
+									</select>
+									
 									<p id="groupsErrorLbl"></p>
-									<!-- input type="number" class="form-control"
-																		name="members" placeholder="Enter nunber of groups" maxlength="20" id="grpsize" name="grpsize" value="1" /-->
-					
-					
-									<div class="row">
-										<div class="radio time-sel">
-											<label> <input type="radio" name="durationRadio"
-												id="6month" value="1" checked> <span
-												class="custom-radio custom-c-radio"></span> 6 Months
-											</label>
-										</div>
-					
-										<div class="radio time-sel">
-											<label> <input type="radio" name="durationRadio"
-												id="12month" value="2"> <span
-												class="custom-radio custom-c-radio"></span> 12 Months
-											</label>
-										</div>
-									</div>
 								</div>
 					
 								<div class="col-sm-3 col-lg-3 col-md-3 col-xs-6">
-									<span id="normal-grp"> = Rs. <label id="grp_total_pr">1,899</label></span>
+									<span id="normal-grp"> = Rs. <label id="grp_total_pr">3,798</label></span>
 								</div>
 							</div>
 						</div>
@@ -469,23 +450,22 @@ p.text-mute {
 						<div class="row">
 							<div
 								class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 field">
+								Rs. <span id="total_pr_without_tax"></span>
+								<span id="tax_pr"></span>
+							</div>
+						</div>
+						
+						<div class="row">
+							<div
+								class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-lg-offset-4 col-md-offset-4 field">
+						
 								<button type="submit" class="btn btn-price btn-primary" id="btnpay">
-									Pay Rs. <span id="total_prbtn">5,398</span>
+									Pay Rs. <span id="total_prbtn"></span>
 								</button>
 							</div>
 						</div>
 					</form>
 										
-
-					<!--div class="row text-left p-l-40">
-						<p>&nbsp;</p>
-						<p class="text-mute">
-							<small>* Group = Dedicated Number</small>
-						</p>
-						<p class="text-mute">
-							<small>* 1 message = 30 secs voice call</small>
-						</p>
-					</div-->
 				</div>
 			</div>
 		</div>
@@ -500,7 +480,7 @@ p.text-mute {
 	<div class="container FadeIn">
 		<div class="row">
 			<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 col">
-				<img src="/images/logo/logo_new_f.png" alt="awaazde" class="logo_image"/>
+				<img src="https://awaaz.de/images/logo/logo_new_f.png" alt="awaazde" class="logo_image"/>
 				<h3 class="footer-logo-text">Awaaz.De</h3>
 				<h6>last mile mobile technology</h6>
 			</div>
@@ -561,14 +541,6 @@ p.text-mute {
 </div>
 {% endblock %} 
 
-{% block extrascripts %}
-<script src="{{ STATIC_URL }}js/jquery.payment.js" type="text/javascript"></script>
-<script type="text/javascript">
-$(function () {
-  $('[data-toggle="popover"]').popover({ trigger: "hover",html:true });
-})
-</script>
-{% endblock %}
 
 
 
