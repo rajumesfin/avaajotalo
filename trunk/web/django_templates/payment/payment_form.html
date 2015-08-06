@@ -312,7 +312,6 @@ $(function () {
   	var tax_label = [];
 	var tax_percentage = [];
   	
-  	console.log("{{APPLICABLE_TAX}}");
   	{% for key,data in APPLICABLE_TAX.items  %}
 		tax_label.push("{{ key }}");
 		tax_percentage.push("{{ data }}");
