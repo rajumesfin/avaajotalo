@@ -14,6 +14,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 
     <title>Awaaz.De - Thank you for your order</title>
+	{% load common_tags %}
 
 
 </head>
@@ -42,8 +43,9 @@
                             <table border="0" width="100%" cellpadding="20" cellspacing="0">
                                 <tr>
                                     <td valign="middle" align="justify">
-                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">Hello {{user.name}},</p>
-                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">Thank you for the payment at AwaazDe. Below is your order summary.</p>
+                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">Dear {{user.name}},</p>
+                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">Thank you for using AwaazDe.</p>
+                                        <p style="font-family: 'Open Sans', Helvetica, sans-serif; color: #747c83; font-size: 13px;">Your payment request has been successfully processed as per the following details :</p>
                                     </td>
                                 </tr>
                                 <tr>
@@ -51,7 +53,8 @@
                                         <table border="0" width="100%" cellpadding="0" cellspacing="0">
                                             <thead>
                                                 <tr>
-                                                    <th colspan="2" style="background: #f5f5f5; font-weight: 600; padding-top: 3px; padding-bottom: 3px;" align="justify">Order Summary - #{{order_no}}</th>
+                                                    <th style="background: #f5f5f5; font-weight: 600; padding-top: 3px; padding-bottom: 3px;" align="justify">Order Summary - #{{order_no}}</th>
+                                                    <th style="background: #f5f5f5; font-weight: 600; padding-top: 3px; padding-bottom: 3px; padding-right: 5px;" align="justify" ><h6 > Service Tax No : AAKCA7216RSD001 </h6></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -109,10 +112,18 @@
                                                     <td>Rs. -{{ coupon_amount|floatformat:2 }}</td>
                                                 </tr>
                                                 {% endif %}
-
+												
+												
+												{% for tax_label,tax_percatenge in APPLICABLE_TAX.items %}
+												<tr>
+													<td style="width: 70%;">{{ tax_label }} ( {{tax_percatenge}}% )</td>
+													<td>Rs. {{ net_total_amount|calculate_tax:tax_percatenge }}</td>
+												</tr>
+												{% endfor %}
+												 
                                                 <tr style="padding-top: 30px;">
                                                     <td style="padding: 5px; width: 70%; line-height: 32px;" align="justify">
-                                                        <strong style="color: #38abdf;">Net Total</strong>
+                                                        <strong style="color: #38abdf;">Amount Received</strong>
                                                     </td>
                                                     <td><strong style="color: #38abdf;">Rs. {{ net_total_amount|floatformat:2 }}</strong>
                                                     </td>
@@ -130,6 +141,7 @@
                             You can contact us with any question or concern by  sending an email to
                             <p><a style="color: #0a8fd5; text-decoration: none; font-size: 14px; font-weight: 600;" href="mailto:ask@awaaz.de">ask@awaaz.de</a>
                             </p>
+                            
                         </td>
                     </tr>
                 </table>

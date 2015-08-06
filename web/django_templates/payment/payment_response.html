@@ -1,6 +1,6 @@
 {% extends 'payment/payment_base.html' %}
 {% load crispy_forms_tags %}
-
+{% load common_tags %}
 {% block title %}Awaaz.De | Buy more credits{% endblock %}
 
 {% block extrahead %}
@@ -130,16 +130,6 @@ a.btn-c-alt {
 										
 										{% if topups_recharge %}
 										<tr>
-											{% if is_unlimited_plan %}
-												<tr>
-													<td style="width: 70%;">
-														{{no_members}} x Members - {{rec_plan}} (valid till {{members_valid|date:'d-m-Y'}})
-													</td>
-													<td>
-														Rs. {{ credit_amount|floatformat:2 }}
-													</td>
-												</tr>
-											{% else %}
 											<tr>
 												<td style="width: 70%;">
 													{{ new_credits }} x Messages - {{rec_plan}}
@@ -148,7 +138,6 @@ a.btn-c-alt {
 													Rs. {{ credit_amount|floatformat:2 }}
 												</td>
 											</tr>
-											{% endif %}
 										</tr>
 										{% endif %}
 									
@@ -164,16 +153,25 @@ a.btn-c-alt {
 										</tr>
 										{% endif %}
 										
+										{% for tax_label,tax_percatenge in APPLICABLE_TAX.items %}
+										<tr>
+											<td style="width: 70%;">{{ tax_label }} ( {{tax_percatenge}}% )</td>
+											<td>Rs. {{ net_total_amount|calculate_tax:tax_percatenge }}</td>
+										</tr>
+										{% endfor %}
+										
 										<tr style="padding-top: 30px;">
-											<td style="width: 70%;"><strong class="text-blue">Net Total</strong></td>
+											<td style="width: 70%;"><strong class="text-blue">Amount Received</strong></td>
 											<td><strong class="text-blue">Rs. {{ net_total_amount|floatformat:2 }}</strong></td>
 										</tr>
 									</tbody>
 								</table>
 							</div>	
 						</div>
-						
-						<div class="row">
+						<div class="pull-left row" style="padding-left: 90px;">
+							<h6> Service Tax No : AAKCA7216RSD001 </h6>
+						</div>
+						<div class="row col-lg-12">
 							<div class="col-lg-4 col-lg-offset-4 text-center">
 								<a href="{% url 'pay' %}" class="btn btn-green">Buy More</a>
 							</div>

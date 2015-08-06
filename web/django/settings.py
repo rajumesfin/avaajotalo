@@ -302,6 +302,8 @@ PAYMENT_GATEWAY_CONFIG = {
     'mode'      : 'TEST', # or on prod 'LIVE' its transaction mode
 }
 
+APPLICABLE_TAX = {"Service Tax" : 14}
+
 SWAGGER_SETTINGS = {
     "api_path": CONSOLE_ROOT,
 }
