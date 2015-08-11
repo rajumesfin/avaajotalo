@@ -21,7 +21,6 @@ from otalo.utils import audio_utils
 from otalo.ao.models import Dialer
 from otalo.surveys.models import Prompt
 
-
 '''
 ' Sync the survey prompt audio on the give machine - we need it because of survey task - before creating call, 
 ' we are calling this method to check if all survey files are present
@@ -30,7 +29,17 @@ from otalo.surveys.models import Prompt
 def sync_survey_audio(s, machine_id):
     is_cached = True
     for p in Prompt.objects.filter(survey=s):
-        is_cached = is_cached and audio_utils.cache_audio(str(p.file))
+        if p.dependson:
+            '''
+            # generate filenames based on possible options of the depending (i.e. earlier in survey) prompt
+            # Don't consider no-input since its ambiguous what to play for question X
+            # if it is dependent on question Y when Y gets no input
+            '''
+            for opt in Option.objects.filter(prompt=p.dependson).exclude(number=''):
+                is_cached = is_cached and audio_utils.cache_audio(str(p.file) + str(opt.number) + audio_utils.SOUND_EXT)
+            
+        else:
+            is_cached = is_cached and audio_utils.cache_audio(str(p.file))
     
     return is_cached
 
@@ -41,6 +50,6 @@ def sync_survey_audio(s, machine_id):
 ' like /home/awaazde/media/2015/01/01/2015_02922323.wav
 '''
 @shared_task(time_limit=300)
-def sync_audio_file(file, machine_id):
-    audio_utils.cache_audio(file)
+def sync_audio_file(file, machine_id, overwrite=False):
+    audio_utils.cache_audio(file, overwrite)
 

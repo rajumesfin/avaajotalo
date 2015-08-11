@@ -21,7 +21,7 @@ def sync_file(file, dialers):
 ' Sync all files from given folder from master server in the slave machine
 '
 '''
-def sync_folder(filedir, dialers):
+def sync_folder(filedir, dialers, overwrite=False):
     machine_ids = get_unique_machines(dialers)
     #getting files
     files = [ join(filedir,f) for f in listdir(filedir) if isfile(join(filedir,f)) and os.path.splitext(join(filedir,f))[1] != '.zip' ]   
@@ -30,7 +30,7 @@ def sync_folder(filedir, dialers):
     #running task on every machine for every file 
     for file in files:
         for mid in machine_ids:
-            tasks.sync_audio_file.s().delay(file, mid)
+            tasks.sync_audio_file.s().delay(file, mid, overwrite)
 
 
 

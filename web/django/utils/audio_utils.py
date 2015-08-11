@@ -44,13 +44,16 @@ shorter
 '''
 BUFFER_MINS = 2
 
+''' make this consistent with code that creates survey objects (like awaazde.console.utils.utils) '''
+SOUND_EXT = '.wav'
+
 '''
 Store this audio locally
 
 Assuming that the filepath is containing the full path including media root.
 NOTE THAT THE MEDIA_ROOT on every machine must be same
 '''
-def cache_audio(filepath):
+def cache_audio(filepath, overwrite=False):
     
     #extracting the file name from filepath
     if settings.MEDIA_ROOT in filepath:
@@ -67,8 +70,8 @@ def cache_audio(filepath):
     http://awaaz.de/console/survey/blank.wav - standard prompt file
     '''
 
-    #checking if file exists
-    if os.path.isfile(filepath):
+    #checking if file exists and we have been instructed not to overwrite (default)
+    if os.path.isfile(filepath) and not overwrite:
         print 'file ' + filepath + ' already present on disk'
         return True
     else:            
