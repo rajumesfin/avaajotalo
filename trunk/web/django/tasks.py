@@ -19,7 +19,7 @@ from celery import shared_task
 from django.conf import settings
 from otalo.utils import audio_utils
 from otalo.ao.models import Dialer
-from otalo.surveys.models import Prompt
+from otalo.surveys.models import Prompt, Option
 
 '''
 ' Sync the survey prompt audio on the give machine - we need it because of survey task - before creating call, 
